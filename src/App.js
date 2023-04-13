@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from "react";
-import "./App.css";
+import { useEffect, useState } from "react";
+import "./styles/App.css";
 import CellRegionMap from "./components/CellRegionMap";
 import CellArrRegionMap from "./components/CellArrRegionMap";
 import ErrorNotification from "./components/ErrorNotification";
@@ -10,10 +10,16 @@ import PremiseTwo from "./components/PremiseTwo";
 import PremiseThree from "./components/PremiseThree";
 import Conclusion from "./components/Conclusion";
 import EvalDisplay from "./components/EvalDisplay";
+import CheckValidity from "./components/CheckValidity";
 
 function App() {
-  const [premiseCount, setPremiseCount] = useState(1);
-  const [conclusionCount, setConclusionCount] = useState(0);
+  const [mousePos, setMousePos] = useState({});
+  const [regions, setRegions] = useState([]);
+  const [index, setIndex] = useState(1);
+  const [domain, setDomain] = useState([]);
+  const [a1, setA1] = useState([]);
+  const [a2, setA2] = useState([]);
+  const [a3, setA3] = useState([]);
   const [evaluation, setEvaluation] = useState("");
   const [evaluationP1, setEvaluationP1] = useState("");
   const [evaluationP2, setEvaluationP2] = useState("");
@@ -21,8 +27,10 @@ function App() {
   const [evaluationC, setEvaluationC] = useState("");
   const [error, setError] = useState(false);
   const [errorText, setErrorText] = useState("");
-  const [mousePos, setMousePos] = useState({});
-
+  const [validity, setValidity] = useState("");
+  const [checkedModels, setCheckedModels] = useState([]);
+  const [checkedModelsCount, setCheckedModelsCount] = useState(0);
+  const [countermodel, setCountermodel] = useState(undefined);
   const [model, setModel] = useState({
     I: {
       1: [],
@@ -30,12 +38,6 @@ function App() {
       3: [],
     },
     D: [],
-  });
-
-  const [diagram, setDiagram] = useState({
-    base: ["A1", "A2", "A3"],
-    destroy: [],
-    save: [],
   });
 
   const [fillColors, setFillColors] = useState({
@@ -60,6 +62,12 @@ function App() {
     cellH: [],
   });
 
+  const [diagram, setDiagram] = useState({
+    base: ["A1", "A2", "A3"],
+    destroy: [],
+    save: [],
+  });
+
   const [diagramP1, setDiagramP1] = useState({
     base: ["A1", "A2", "A3"],
     destroy: [],
@@ -80,6 +88,9 @@ function App() {
     destroy: [],
     save: [],
   });
+  const [argument, setArgument] = useState({ premises: [], conclusion: null });
+  const [premiseCount, setPremiseCount] = useState(1);
+  const [conclusionCount, setConclusionCount] = useState(0);
 
   const [premise1, setPremise1] = useState({
     fillColors: fillColors,
@@ -101,14 +112,6 @@ function App() {
     cellVars: cellVars,
     show: false,
   });
-
-  const [regions, setRegions] = useState([]);
-  const [index, setIndex] = useState(1);
-
-  const [domain, setDomain] = useState([]);
-  const [a1, setA1] = useState([]);
-  const [a2, setA2] = useState([]);
-  const [a3, setA3] = useState([]);
 
   function handleClick(event) {
     setError(false);
@@ -245,6 +248,24 @@ function App() {
     let newIndex = index + 1;
     setIndex(newIndex);
     setRegions([]);
+  }
+
+  function handleCheckValidity() {
+    if (argument.conclusion === null) {
+      setError(true);
+      setErrorText("An argument requires a conclusion");
+      return;
+    }
+    let result = CheckValidity(argument, setCheckedModels);
+    if (result.valid === true) {
+      setValidity("Valid");
+    } else if (result.valid === false) {
+      setValidity("Invalid");
+      setCountermodel(result.model);
+      setModel(result.model);
+    } else {
+      setValidity("Undefined");
+    }
   }
 
   function handleEvalClick() {
@@ -384,7 +405,10 @@ function App() {
   }
 
   function addPremise() {
+    setError(false);
     if (!isReady()) {
+      setError(true);
+      setErrorText("A region is selected but neither destroyed nor saved.");
       console.log("Not ready");
       return;
     }
@@ -392,34 +416,82 @@ function App() {
     if (premiseCount === 1) {
       setPremise1({ fillColors: fillColors, cellVars: cellVars, show: true });
       setDiagramP1(diagram);
+      setArgument((prevArgument) => {
+        return {
+          ...prevArgument,
+          premises: [...prevArgument.premises, diagram],
+        };
+      });
     } else if (premiseCount === 2) {
       setPremise2({ fillColors: fillColors, cellVars: cellVars, show: true });
       setDiagramP2(diagram);
+      setArgument((prevArgument) => {
+        return {
+          ...prevArgument,
+          premises: [...prevArgument.premises, diagram],
+        };
+      });
     } else if (premiseCount === 3) {
       setPremise3({ fillColors: fillColors, cellVars: cellVars, show: true });
       setDiagramP3(diagram);
+      setArgument((prevArgument) => {
+        return {
+          ...prevArgument,
+          premises: [...prevArgument.premises, diagram],
+        };
+      });
     } else if (premiseCount > 3) {
+      setError(true);
+      setErrorText("Only three premises maximum.");
       console.log("Too many premises");
     }
+    console.log("argument", argument);
     setPremiseCount(premiseCount + 1);
     resetConstruction();
   }
 
   function addConclusion() {
+    setError(false);
     if (!isReady()) {
+      setError(true);
+      setErrorText("A region is selected but neither destroyed nor saved.");
       console.log("Not ready");
       return;
     }
     if (conclusionCount < 1) {
       setConclusion({ fillColors: fillColors, cellVars: cellVars, show: true });
       setDiagramC(diagram);
+      setArgument((prevArgument) => {
+        return {
+          ...prevArgument,
+          conclusion: diagram,
+        };
+      });
     } else {
       console.log("Conclusion already set");
     }
     setConclusionCount(conclusionCount + 1);
+    resetConstruction();
+  }
+  function resetArgument() {
+    setArgument({
+      premises: [],
+      conclusion: [],
+    });
+    setPremiseCount(1);
+    setConclusionCount(0);
+    setPremise1({ fillColors: {}, cellVars: {}, show: false });
+    setPremise2({ fillColors: {}, cellVars: {}, show: false });
+    setPremise3({ fillColors: {}, cellVars: {}, show: false });
+    setConclusion({ fillColors: {}, cellVars: {}, show: false });
+    setDiagramP1({ base: [], destroy: [], save: [] });
+    setDiagramP2({ base: [], destroy: [], save: [] });
+    setDiagramP3({ base: [], destroy: [], save: [] });
+    setDiagramC({ base: [], destroy: [], save: [] });
   }
 
   function resetConstruction() {
+    setError(false);
     setDiagram({ base: ["A1", "A2", "A3"], destroy: [], save: [] });
     setFillColors({
       cellA: "#f2f2f2",
@@ -444,6 +516,20 @@ function App() {
     setRegions([]);
     setIndex(1);
   }
+  function resetModel() {
+    setModel({
+      I: {
+        1: [],
+        2: [],
+        3: [],
+      },
+      D: [],
+    });
+    setDomain([]);
+    setA1([]);
+    setA2([]);
+    setA3([]);
+  }
 
   useEffect(() => {
     window.addEventListener("mousemove", handleMouseMove);
@@ -452,13 +538,9 @@ function App() {
     };
   }, []);
 
-  function removeTags(inputStr) {
-    if (inputStr.startsWith("<>") && inputStr.endsWith("</>")) {
-      return inputStr.substring(2, inputStr.length - 3);
-    } else {
-      return inputStr;
-    }
-  }
+  useEffect(() => {
+    setCheckedModelsCount(checkedModels.length);
+  }, [checkedModels]);
 
   const formattedDomain = `{${model.D.join(",")}}`;
   const formattedA1 = `{${model.I[1].join(",")}}`;
@@ -471,27 +553,13 @@ function App() {
 
   return (
     <div>
-      <nav className="navbar navbar-dark bg-dark">
-        <div className="container-fluid">
-          <a className="navbar-brand" href="#">
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/3-set_Venn_diagram.svg/1920px-3-set_Venn_diagram.svg.png"
-              alt=""
-              width="30"
-              height="24"
-              class="d-inline-block align-text-top"
-            />
-            vennPlayground{" "}
-          </a>
-        </div>
-      </nav>
       <br></br>
       <div id="cuadricula">
         <div className="item" style={{ "--color": "#3E989B" }}>
           <h4>argumentStack</h4>
           <p>
             <small>Add diagrams as premises and conclusion</small>
-          </p>
+          </p>{" "}
         </div>
         <div className="item" style={{ "--color": "#6DB465" }}>
           <h4>diagramConstructor</h4>
@@ -531,8 +599,8 @@ function App() {
             evaluationC={evaluationC}
           ></Conclusion>
         </div>
-        <div className="item" style={{ "--color": "#C87694" }}>
-          <div className="d-grid gap-2 d-md-flex">
+        <div className="item" style={{ "--color": "#f2f2f2" }}>
+          <div className="btn-group" role="group">
             <button
               type="button"
               className="btn btn-danger mr-1"
@@ -555,28 +623,70 @@ function App() {
           ></VennConstructor>
           <div>
             <hr></hr>
-            <div className="d-grid gap-2 d-md-flex justify-content-md-end"></div>
-            <button
-              type="button"
-              className="btn btn-warning mr-1"
-              onClick={addPremise}
-            >
-              Set as premise
-            </button>
-            <button
-              type="button"
-              className="btn btn-warning mr-2"
-              onClick={addConclusion}
-            >
-              Set as conclusion
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary mr-3"
-              onClick={resetConstruction}
-            >
-              Reset constructor
-            </button>
+            <div className="btn-group" role="group">
+              <button
+                type="button"
+                className="btn btn-warning mr-1"
+                onClick={addPremise}
+              >
+                Set as premise
+              </button>
+              <button
+                type="button"
+                className="btn btn-warning mr-2"
+                onClick={addConclusion}
+              >
+                Set as conclusion
+              </button>
+            </div>
+            <div className="btn-group-vertical">
+              <button
+                type="button"
+                className="btn btn-secondary mr-3"
+                onClick={resetConstruction}
+              >
+                Reset constructor
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-secondary mr-3"
+                onClick={resetArgument}
+              >
+                Reset argument
+              </button>
+            </div>
+
+            <br></br>
+            <hr></hr>
+            <hr></hr>
+            <div className="btn-group" role="group">
+              <button
+                type="button"
+                className="btn btn-info mr-3"
+                onClick={handleCheckValidity}
+              >
+                Check validity
+              </button>
+            </div>
+            <br></br>
+            <br></br>
+            <div>Checked {checkedModelsCount} models</div>
+            <div>{validity}</div>
+
+            <br></br>
+            {countermodel && (
+              <>
+                <h5>Countermodel:</h5>
+                <div style={{ textAlign: "left" }}>
+                  <p> Domian = {domainDisplay}</p>
+                </div>
+
+                <p> ⟦A&#8321;⟧ ={a1Display}</p>
+                <p>⟦A&#8322;⟧ = {a2Display}</p>
+                <p> ⟦A&#8323;⟧ ={a3Display}</p>
+              </>
+            )}
           </div>
           <br></br>
           <div>
@@ -632,6 +742,7 @@ function App() {
             handleA3Change={handleA3Change}
             handleDomainChange={handleDomainChange}
             handleEvalClick={handleEvalClick}
+            resetModel={resetModel}
             domain={domain}
             a1={a1}
             a2={a2}
