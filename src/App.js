@@ -13,6 +13,7 @@ import EvalDisplay from "./components/EvalDisplay";
 import CheckValidity from "./components/CheckValidity";
 
 function App() {
+  const [isLoading, setIsLoading] = useState(false);
   const [mousePos, setMousePos] = useState({});
   const [regions, setRegions] = useState([]);
   const [index, setIndex] = useState(1);
@@ -28,7 +29,6 @@ function App() {
   const [error, setError] = useState(false);
   const [errorText, setErrorText] = useState("");
   const [validity, setValidity] = useState("");
-  const [checkedModels, setCheckedModels] = useState([]);
   const [checkedModelsCount, setCheckedModelsCount] = useState(0);
   const [countermodel, setCountermodel] = useState(undefined);
   const [model, setModel] = useState({
@@ -251,21 +251,30 @@ function App() {
   }
 
   function handleCheckValidity() {
+    setIsLoading(true);
     if (argument.conclusion === null) {
       setError(true);
       setErrorText("An argument requires a conclusion");
       return;
     }
-    let result = CheckValidity(argument, setCheckedModels);
-    if (result.valid === true) {
-      setValidity("Valid");
-    } else if (result.valid === false) {
-      setValidity("Invalid");
-      setCountermodel(result.model);
-      setModel(result.model);
-    } else {
-      setValidity("Undefined");
-    }
+    setTimeout(() => {
+      let result = CheckValidity(argument);
+      if (result.valid === true) {
+        setValidity("Valid");
+        setCheckedModelsCount(result.numModelsChecked);
+        setIsLoading(false);
+      } else if (result.valid === false) {
+        setValidity("Invalid");
+        setCountermodel(result.model);
+        setModel(result.model);
+        setCheckedModelsCount(result.numModelsChecked);
+        setIsLoading(false);
+      } else {
+        setValidity("Undefined");
+        setCheckedModelsCount(result.numModelsChecked);
+        setIsLoading(false);
+      }
+    }, 500);
   }
 
   function handleEvalClick() {
@@ -538,10 +547,6 @@ function App() {
     };
   }, []);
 
-  useEffect(() => {
-    setCheckedModelsCount(checkedModels.length);
-  }, [checkedModels]);
-
   const formattedDomain = `{${model.D.join(",")}}`;
   const formattedA1 = `{${model.I[1].join(",")}}`;
   const formattedA2 = `{${model.I[2].join(",")}}`;
@@ -668,6 +673,7 @@ function App() {
               >
                 Check validity
               </button>
+              {isLoading && <div>Checking...</div>}
             </div>
             <br></br>
             <br></br>

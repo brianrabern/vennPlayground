@@ -2,16 +2,24 @@ import SemanticEval from "./SemanticEval";
 
 //check validity of an argument
 
-function CheckValidity(argument, setCheckedModels) {
+function CheckValidity(argument) {
+  let numModelsChecked = 0;
   // get power set of domain
   function powerSet(set) {
-    if (set.length === 0) {
-      return [[]];
+    const n = set.length;
+    const powerSet = [];
+
+    for (let i = 0; i < 1 << n; i++) {
+      const subset = [];
+      for (let j = 0; j < n; j++) {
+        if (i & (1 << j)) {
+          subset.push(set[j]);
+        }
+      }
+      powerSet.push(subset);
     }
-    const [first, ...rest] = set;
-    const withoutFirst = powerSet(rest);
-    const withFirst = withoutFirst.map((subset) => [first, ...subset]);
-    return [...withoutFirst, ...withFirst];
+
+    return powerSet;
   }
 
   // get all models for a given domain size
@@ -48,22 +56,24 @@ function CheckValidity(argument, setCheckedModels) {
   }
 
   function findCountermodel(argument) {
-    const checkedModels = [];
     for (let i = 0; i <= 8; i++) {
       const models = getModels(i);
       for (let j = 0; j < models.length; j++) {
         const model = models[j];
+
+        numModelsChecked++;
+
         if (checkArgument(argument, model)) {
-          checkedModels.push(model);
-          setCheckedModels([...checkedModels]);
-          return { model: model, checkedModels: checkedModels, valid: false }; // countermodel found, here it is
-        } else {
-          checkedModels.push(model);
-          setCheckedModels([...checkedModels]);
+          return {
+            model: model,
+            valid: false,
+            numModelsChecked: numModelsChecked,
+          }; // countermodel found, here it is
         }
       }
     }
-    return { model: null, checkedModels: checkedModels, valid: true }; // no countermodel found
+
+    return { model: null, valid: true, numModelsChecked: numModelsChecked }; // no countermodel found
   }
 
   return findCountermodel(argument); // return the results
