@@ -71,17 +71,17 @@ function SemanticEval(diagram, model) {
     }
   }
 
-  // check whether every array in an array has a  non-empty bigUnion
+  // check whether every array in an array has a non-empty bigUnion
   function isNonEmptyArr(arr) {
     if (arr.length < 1) {
       return true;
     } else {
       for (let cellArr of arr) {
-        if (!isEmpty(unionOfCells(cellArr))) {
-          return true;
+        if (isEmpty(unionOfCells(cellArr))) {
+          return false;
         }
       }
-      return false;
+      return true;
     }
   }
 
