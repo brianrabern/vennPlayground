@@ -11,8 +11,11 @@ import PremiseThree from "./components/PremiseThree";
 import Conclusion from "./components/Conclusion";
 import EvalDisplay from "./components/EvalDisplay";
 import CheckValidity from "./components/CheckValidity";
+import ProgressBar from "./components/ProgressBar";
 
 function App() {
+  const [barColor, setBarColor] = useState("#66CC66");
+  const [barCompleted, setBarCompleted] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [mousePos, setMousePos] = useState({});
   const [regions, setRegions] = useState([]);
@@ -250,31 +253,28 @@ function App() {
     setRegions([]);
   }
 
-  function handleCheckValidity() {
+  async function handleCheckValidity() {
     setIsLoading(true);
     if (argument.conclusion === null) {
       setError(true);
       setErrorText("An argument requires a conclusion");
       return;
     }
-    setTimeout(() => {
-      let result = CheckValidity(argument);
-      if (result.valid === true) {
-        setValidity("Valid");
-        setCheckedModelsCount(result.numModelsChecked);
-        setIsLoading(false);
-      } else if (result.valid === false) {
-        setValidity("Invalid");
-        setCountermodel(result.model);
-        setModel(result.model);
-        setCheckedModelsCount(result.numModelsChecked);
-        setIsLoading(false);
-      } else {
-        setValidity("Undefined");
-        setCheckedModelsCount(result.numModelsChecked);
-        setIsLoading(false);
-      }
-    }, 500);
+
+    let result = await CheckValidity(argument, setCheckedModelsCount);
+    if (result.valid === true) {
+      setValidity("Valid");
+      setCheckedModelsCount(result.numModelsChecked);
+      setBarCompleted(1);
+      setIsLoading(false);
+    } else if (result.valid === false) {
+      setValidity("Invalid");
+      setCountermodel(result.model);
+      setBarCompleted(1);
+      setModel(result.model);
+      setCheckedModelsCount(result.numModelsChecked);
+      setIsLoading(false);
+    }
   }
 
   function handleEvalClick() {
@@ -673,13 +673,28 @@ function App() {
               >
                 Check validity
               </button>
-              {isLoading && <div>Checking...</div>}
+              {isLoading && (
+                <>
+                  <div>Checking...</div>
+                  <div>
+                    {" "}
+                    <small>...in the worst case 16.8 million models!</small>
+                  </div>
+                </>
+              )}
             </div>
             <br></br>
             <br></br>
             <div>Checked {checkedModelsCount} models</div>
-            <div>{validity}</div>
 
+            <ProgressBar
+              bgcolor={barColor}
+              completed={
+                barCompleted ? 100 : Math.ceil(checkedModelsCount / 16777216)
+              }
+            ></ProgressBar>
+
+            <div>{validity}</div>
             <br></br>
             {countermodel && (
               <>
