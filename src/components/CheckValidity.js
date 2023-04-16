@@ -1,15 +1,19 @@
 import SemanticEval from "./SemanticEval";
 
-async function CheckValidity(argument, updateCountCallback) {
-  let numModelsChecked = 0;
 
+async function CheckValidity(argument, updateCountCallback) {
+ 
+  let numModelsChecked = 0;
+  let expectedNumModels = 0;
   for (let i = 0; i <= 8; i++) {
     const models = getModels(i);
+    expectedNumModels += models.length;
     for (let j = 0; j < models.length; j++) {
       const model = models[j];
-
       numModelsChecked++;
+      console.log(`getModels(${i}).length: ${models.length}, numModelsChecked: ${numModelsChecked}`);
 
+     
       if (checkArgument(argument, model)) {
         return {
           model: model,
@@ -20,7 +24,15 @@ async function CheckValidity(argument, updateCountCallback) {
 
       await new Promise((resolve) => setTimeout(resolve, 0));
       updateCountCallback(numModelsChecked);
+      
+    
+      
+      
     }
+    console.log(
+      `Generated ${models.length} models for domain size ${i}. Expected number of models: ${expectedNumModels}, actual number of models: ${numModelsChecked}`
+    );
+   
   }
 
   return { model: null, valid: true, numModelsChecked: numModelsChecked };
@@ -38,7 +50,7 @@ async function CheckValidity(argument, updateCountCallback) {
       }
       powerSet.push(subset);
     }
-
+    
     return powerSet;
   }
 
@@ -60,8 +72,10 @@ async function CheckValidity(argument, updateCountCallback) {
         }
       }
     }
+  
     return models;
   }
+
 
   function checkArgument(argument, model) {
     const premisesTrue = argument.premises.every((premise) =>

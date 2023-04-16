@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef,useState} from "react";
 import "./styles/App.css";
 import CellRegionMap from "./components/CellRegionMap";
 import CellArrRegionMap from "./components/CellArrRegionMap";
@@ -12,8 +12,10 @@ import Conclusion from "./components/Conclusion";
 import EvalDisplay from "./components/EvalDisplay";
 import CheckValidity from "./components/CheckValidity";
 import ProgressBar from "./components/ProgressBar";
+import StopModal from "./components/StopModal";
 
 function App() {
+  // const [cancel, setCancel] = useState(false);
   const [barColor, setBarColor] = useState("#66CC66");
   const [barCompleted, setBarCompleted] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -253,14 +255,16 @@ function App() {
     setRegions([]);
   }
 
+
   async function handleCheckValidity() {
-    setIsLoading(true);
+   
+    
     if (argument.conclusion === null) {
       setError(true);
       setErrorText("An argument requires a conclusion");
       return;
-    }
-
+    }else {
+    setIsLoading(true);
     let result = await CheckValidity(argument, setCheckedModelsCount);
     if (result.valid === true) {
       setValidity("Valid");
@@ -275,6 +279,16 @@ function App() {
       setCheckedModelsCount(result.numModelsChecked);
       setIsLoading(false);
     }
+  }
+    
+  }
+
+
+  function handleStop(){
+    
+      setIsLoading(false);
+      window.location.reload();
+    
   }
 
   function handleEvalClick() {
@@ -418,7 +432,6 @@ function App() {
     if (!isReady()) {
       setError(true);
       setErrorText("A region is selected but neither destroyed nor saved.");
-      console.log("Not ready");
       return;
     }
 
@@ -454,7 +467,7 @@ function App() {
       setErrorText("Only three premises maximum.");
       console.log("Too many premises");
     }
-    console.log("argument", argument);
+    
     setPremiseCount(premiseCount + 1);
     resetConstruction();
   }
@@ -555,6 +568,29 @@ function App() {
   let a1Display = `${formattedA1}`;
   let a2Display = `${formattedA2}`;
   let a3Display = `${formattedA3}`;
+  
+  function getDomainSize(numModels) {
+    if (numModels === 0) {
+      return 0;
+    } else if (numModels <= 8) {
+      return 1;
+    } else if (numModels <= 64) {
+      return 2;
+    } else if (numModels <= 512) {
+      return 3;
+    } else if (numModels <= 4096) {
+      return 4;
+    } else if (numModels <= 32768) {
+      return 5;
+    } else if (numModels <= 262144) {
+      return 6;
+    } else if (numModels <= 2097152) {
+      return 7;
+    } else if (numModels <= 16777216) {
+      return 8;
+    }
+    return -1; // return -1 if the numModels is not in the expected range
+  }
 
   return (
     <div>
@@ -631,7 +667,7 @@ function App() {
             <div className="btn-group" role="group">
               <button
                 type="button"
-                className="btn btn-warning mr-1"
+                className="btn btn-warning mr-2"
                 onClick={addPremise}
               >
                 Set as premise
@@ -678,7 +714,8 @@ function App() {
                   <div>Checking...</div>
                   <div>
                     {" "}
-                    <small>...in the worst case 16.8 million models!</small>
+                    <small>     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;........in the worst case 16.8 million models!</small>
+                    <StopModal func ={handleStop}></StopModal>
                   </div>
                 </>
               )}
@@ -690,10 +727,10 @@ function App() {
             <ProgressBar
               bgcolor={barColor}
               completed={
-                barCompleted ? 100 : Math.ceil(checkedModelsCount / 16777216)
+                barCompleted ? 100 : getDomainSize(checkedModelsCount)/8*100
               }
             ></ProgressBar>
-
+            
             <div>{validity}</div>
             <br></br>
             {countermodel && (
