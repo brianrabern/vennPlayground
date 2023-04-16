@@ -1,70 +1,25 @@
-# Getting Started with Create React App
+# vennPlayground
+This is an interface for generating and semantically evaluating Venn Diagrams.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Why?
 
-## Available Scripts
+This is in conneciton to a project on the formal syntax and compositional semantics of diagrams, especially diagrams used in logic such as quantificational diagrams and the diagrams associated with Peirce and Venn. The formal syntax and semantics for Venn Diagrams implemented in this application is based on B. Pickel and B. Rabern's "A Compositional Semantics for Venn Diagrams" (in progress). 
 
-In the project directory, you can run:
+## Basic functionality
 
-### `npm start`
+The application allows a user to construct a Venn Diagram according to the rules for "destruction" and "salvation".  A model can be specified and the diagram can be evalated for truth or falsity in te model. Random models can be generated. After constructing a diagram it can be set as a premise or conclusion and added to the 'argument stack". The validity of and argument can be checked, and a countermodel will be provided if the argument is invalid.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Background issue
 
-### `npm test`
+In "A Compositional Semantics for Venn Diagrams" B. Pickel and B. Rabern set out to show the following:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+\begin{itemize}
+\item[(i)] Each Venn Diagram can be specified by a finite number of applications of a finite number of syntactic rules to an enumerable vocabulary. 
+\item[(ii)] The syntactic derivation of a Venn Diagram can be specified in a tree diagram on analogy with the syntactic derivation of a formula of a natural or formal language.
+\item [(iii)] The truth conditions of a Venn Diagram can be compositionally specified in terms of its syntactic derivation. The semantics is compositional in that each syntactic rule in the derivation of a diagram corresponds to a semantic rule in the derivation of its truth conditions. More formally, if $\alpha$ is a stage in the syntactic derivation of a diagram that results from applying formation rule $\mu$ to $\beta_1,\ldots,\beta_n$, then the semantic value of $\alpha$ is the result of applying from function $f_\mu$ to the semantic values of $\beta_1,\ldots,\beta_n$.
+\end{itemize}
 
-### `npm run build`
+## Imporvements/future
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This is only a sketch. The point was just to try out some ideas. In addition to research on non-linguistic representaiton, the basic funtionality could be developed for teaching logic, and for creating interactive logic exersices. 
