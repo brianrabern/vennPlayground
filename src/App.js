@@ -510,6 +510,9 @@ function App() {
     setDiagramP2({ base: [], destroy: [], save: [] });
     setDiagramP3({ base: [], destroy: [], save: [] });
     setDiagramC({ base: [], destroy: [], save: [] });
+    setCheckedModelsCount(0);
+    setIsLoading(false);
+    setBarCompleted(0);
   }
 
   function resetConstruction() {

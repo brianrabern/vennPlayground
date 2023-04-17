@@ -1,10 +1,11 @@
 import React from "react";
-import ReactDOM from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ReactDOM from 'react-dom/client';
+import { HashRouter, Routes, Route } from "react-router-dom";
 import "./styles/index.css";
 import Nav from "./components/Nav";
 import App from "./App";
 import About from "./pages/About";
+
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -15,12 +16,14 @@ root.render(
       integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
       crossOrigin="anonymous"
     ></link>
-    <Nav></Nav>
-    <BrowserRouter>
+    
+    <HashRouter>
+      <Nav/>
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/about" element={<About />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
+    
   </React.StrictMode>
 );
