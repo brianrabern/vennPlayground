@@ -21,3 +21,4 @@ Building on the work of Sun-Joo Shin (*The logical status of diagrams*. 1994), i
 
 This is only a sketch. The point was just to try out some ideas. In addition to research on non-linguistic representation, the basic functionality could be developed for teaching logic and creating interactive logic exercises.
 
+deployed here: https://brianrabern.github.io/vennPlayground/
